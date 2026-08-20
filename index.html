@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Applies static patches from KotOR Patch Manager">
+  <title>Community KotOR Patcher</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Community KOTOR Patcher</h1>
+      <p>Applies static patches from <a href="https://github.com/LaneDibello/Kotor-Patch-Manager/tree/master" target="_blank" rel="noreferrer">KotOR Patch Manager</a>.</p>
+    </div>
+    <a href="https://github.com/LaneDibello/Kotor-Patch-Manager/tree/master/Patches" target="_blank" rel="noreferrer">Patch source</a>
+  </header>
+
+  <main>
+    <section aria-labelledby="file-heading">
+      <div class="section-heading">
+        <h2 id="file-heading">1. Select executable</h2>
+      </div>
+
+      <label class="drop-zone" id="drop-zone">
+        <input id="file-input" type="file">
+        <strong>Choose or drop your game executable</strong>
+        <span>swkotor.exe, swkotor2.exe, or the native Linux executable</span>
+      </label>
+
+      <div class="file-card" id="file-card" hidden>
+        <div class="file-details">
+          <strong id="file-name"></strong>
+          <span id="file-meta"></span>
+          <code id="file-hash"></code>
+        </div>
+        <span class="status-badge" id="file-status"></span>
+        <button class="remove-button" id="remove-file" type="button" aria-label="Remove selected file">Remove</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="patch-heading">
+      <div class="section-heading">
+        <h2 id="patch-heading">2. Select patches</h2>
+        <span id="selection-count">0 selected</span>
+      </div>
+
+      <div id="patch-list" class="patch-list">
+        <div class="empty-state">Select a recognized executable to load compatible patches.</div>
+      </div>
+    </section>
+
+    <section aria-labelledby="apply-heading">
+      <div class="section-heading">
+        <h2 id="apply-heading">3. Apply patches</h2>
+      </div>
+      <div class="action-row">
+        <button class="primary-button" id="apply-button" type="button" disabled>Apply selected patches</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="backup-heading">
+      <div class="section-heading">
+        <h2 id="backup-heading">4. Back up original executable</h2>
+      </div>
+      <p class="step-note">Make a backup of your original game executable before replacing it with the patched copy.</p>
+    </section>
+
+    <section aria-labelledby="save-heading">
+      <div class="section-heading">
+        <h2 id="save-heading">5. Save executable</h2>
+      </div>
+      <div class="result" id="result" role="status" aria-live="polite" hidden></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>No EXE is uploaded or downloaded. Patching happens locally on your device after this page and patch files are loaded.</p>
+    <p>Use at your own risk. This tool is provided as-is; the maintainers are not responsible for damaged installs, lost files, mod conflicts, or other issues.</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
