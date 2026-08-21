@@ -10,6 +10,7 @@ export const VERSIONS = {
 
 const readU16 = (view, offset) => view.getUint16(offset, true);
 const readU32 = (view, offset) => view.getUint32(offset, true);
+const readU64 = (view, offset) => readU32(view, offset) + readU32(view, offset + 4) * 0x100000000;
 
 function ensureRange(bytes, offset, length, label) {
   if (!Number.isSafeInteger(offset) || offset < 0 || offset + length > bytes.length) {
@@ -21,6 +22,7 @@ export function createAddressMapper(bytes, expectedFormat) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (expectedFormat === "pe") return createPeMapper(bytes, view);
   if (expectedFormat === "elf") return createElfMapper(bytes, view);
+  if (expectedFormat === "macho") return createMachOMapper(bytes, view);
   throw new Error("Unsupported executable format.");
 }
 
@@ -89,6 +91,66 @@ function createElfMapper(bytes, view) {
     const fileOffset = segment.fileOffset + address - segment.virtualAddress;
     ensureRange(bytes, fileOffset, length, "Mapped ELF address");
     return fileOffset;
+  };
+}
+
+function createMachOMapper(bytes, view) {
+  ensureRange(bytes, 0, 8, "Mach-O header");
+  let sliceOffset = 0;
+  let sliceSize = bytes.length;
+  if (view.getUint32(0, false) === 0xcafebabe) {
+    const architectureCount = view.getUint32(4, false);
+    ensureRange(bytes, 8, architectureCount * 20, "Mach-O architecture table");
+    let architecture = null;
+    for (let index = 0; index < architectureCount; index += 1) {
+      const offset = 8 + index * 20;
+      if (view.getUint32(offset, false) === 0x01000007) {
+        architecture = { offset: view.getUint32(offset + 8, false), size: view.getUint32(offset + 12, false) };
+        break;
+      }
+    }
+    if (!architecture) throw new Error("Mach-O executable has no x86_64 slice.");
+    sliceOffset = architecture.offset;
+    sliceSize = architecture.size;
+    ensureRange(bytes, sliceOffset, sliceSize, "Mach-O x86_64 slice");
+  }
+
+  ensureRange(bytes, sliceOffset, 32, "64-bit Mach-O header");
+  if (readU32(view, sliceOffset) !== 0xfeedfacf || readU32(view, sliceOffset + 4) !== 0x01000007) {
+    throw new Error("Expected a 64-bit little-endian x86 Mach-O executable.");
+  }
+  const commandCount = readU32(view, sliceOffset + 16);
+  const commandBytes = readU32(view, sliceOffset + 20);
+  ensureRange(bytes, sliceOffset + 32, commandBytes, "Mach-O load commands");
+  const segments = [];
+  let commandOffset = sliceOffset + 32;
+  for (let index = 0; index < commandCount; index += 1) {
+    ensureRange(bytes, commandOffset, 8, "Mach-O load command");
+    const command = readU32(view, commandOffset);
+    const commandSize = readU32(view, commandOffset + 4);
+    if (commandSize < 8 || commandOffset + commandSize > sliceOffset + 32 + commandBytes) {
+      throw new Error("Invalid Mach-O load command.");
+    }
+    if (command === 0x19) {
+      if (commandSize < 72) throw new Error("Invalid Mach-O segment command.");
+      const fileSize = readU64(view, commandOffset + 48);
+      if (fileSize) {
+        segments.push({
+          fileOffset: readU64(view, commandOffset + 40),
+          fileSize
+        });
+      }
+    }
+    commandOffset += commandSize;
+  }
+  if (!segments.length) throw new Error("Mach-O executable has no file-backed segments.");
+  return (address, length) => {
+    const withinSlice = address - sliceOffset;
+    const segment = segments.find(item => withinSlice >= item.fileOffset && withinSlice + length <= item.fileOffset + item.fileSize);
+    if (!segment) throw new Error(`Address 0x${address.toString(16)} is not mapped by a Mach-O segment.`);
+    if (address + length > sliceOffset + sliceSize) throw new Error(`Address 0x${address.toString(16)} is outside the Mach-O slice.`);
+    ensureRange(bytes, address, length, "Mapped Mach-O address");
+    return address;
   };
 }
 
