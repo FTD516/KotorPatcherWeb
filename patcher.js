@@ -4,7 +4,8 @@ export const VERSIONS = {
   "34E6D971C034222A417995D8E1E8FDD9F8781795C9C289BD86C499A439F34C88": { id: "kotor1_steam_103", name: "kotor1_steam_103", format: "pe" },
   "777BEE235A9E8BDD9863F6741BC3AC54BB6A113B62B1D2E4D12BBE6DB963A914": { id: "kotor2_gog_aspyr", name: "kotor2_gog_aspyr", format: "pe" },
   "6A522E71631DCEE93467BD2010F3B23D9145326E1E2E89305F13AB104DBBFFEF": { id: "kotor2_steam_aspyr", name: "kotor2_steam_aspyr", format: "pe" },
-  "ED043D21A4578FD1C6F1557F0F72BDE5589BA3572A5B6F1A687ED9FEEAB49AC3": { id: "kotor2_steam_aspyr_linux", name: "kotor2_steam_aspyr_linux", format: "elf" }
+  "ED043D21A4578FD1C6F1557F0F72BDE5589BA3572A5B6F1A687ED9FEEAB49AC3": { id: "kotor2_steam_aspyr_linux", name: "kotor2_steam_aspyr_linux", format: "elf" },
+  "1C536C3EF2E8BED348B38934B381E3DC427F3EBEE21FADDFBD7524FBB2388D77": { id: "kotor2_steam_aspyr_macos", name: "kotor2_steam_aspyr_macos", format: "macho" }
 };
 
 const readU16 = (view, offset) => view.getUint16(offset, true);
