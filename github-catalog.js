@@ -1,4 +1,4 @@
-const REPOSITORY = "FTD516/Kotor-Patch-Manager";
+const REPOSITORY = "LaneDibello/Kotor-Patch-Manager";
 const BRANCH = "master";
 const TREE_URL = `https://api.github.com/repos/${REPOSITORY}/git/trees/${BRANCH}?recursive=1`;
 const RAW_ROOT = `https://raw.githubusercontent.com/${REPOSITORY}/${BRANCH}/`;
